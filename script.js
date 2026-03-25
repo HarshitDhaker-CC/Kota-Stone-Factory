@@ -9,7 +9,7 @@
   window.addEventListener('load', () => {
     setTimeout(() => {
       document.getElementById('preloader').classList.add('hidden');
-    }, 2400);
+    }, 700); // reduced from 2400ms for faster perception
   });
 
   /* ── SCROLL PROGRESS ── */

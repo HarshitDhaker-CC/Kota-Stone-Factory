@@ -88,7 +88,7 @@ section { padding: 100px 0; }
 .preloader-fill {
   height: 100%; width: 0;
   background: linear-gradient(90deg, var(--primary), var(--accent));
-  border-radius: 2px; animation: preload 2.2s ease-in-out forwards;
+  border-radius: 2px; animation: preload 0.7s ease-in-out forwards;
 }
 @keyframes preload { to { width: 100%; } }
 
