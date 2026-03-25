@@ -1,77 +1,88 @@
 /* =========================================================
    KOTASTONE — PREMIUM JAVASCRIPT
+   All elements are null-checked so this file works safely
+   on both index.html and all inner pages.
    ========================================================= */
 
 (function() {
   'use strict';
 
+  /* ── HELPERS ── */
+  const $  = id => document.getElementById(id);
+  const $$ = sel => document.querySelectorAll(sel);
+
   /* ── PRELOADER ── */
   window.addEventListener('load', () => {
     setTimeout(() => {
-      document.getElementById('preloader').classList.add('hidden');
-    }, 700); // reduced from 2400ms for faster perception
+      const pre = $('preloader');
+      if (pre) pre.classList.add('hidden');
+    }, 700);
   });
 
   /* ── SCROLL PROGRESS ── */
   function updateScrollProgress() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = docHeight ? (scrollTop / docHeight) * 100 : 0;
-    document.getElementById('scroll-progress').style.width = pct + '%';
+    const el = $('scroll-progress');
+    if (!el) return;
+    const scrollTop  = window.scrollY;
+    const docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+    el.style.width   = (docHeight ? (scrollTop / docHeight) * 100 : 0) + '%';
   }
 
   /* ── BACK TO TOP ── */
-  const btt = document.getElementById('back-to-top');
+  const btt = $('back-to-top');
+  if (btt) {
+    btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  /* ── SCROLL HANDLER ── */
   function handleScroll() {
     updateScrollProgress();
-    btt.classList.toggle('visible', window.scrollY > 400);
-    // Navbar scroll
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
-    // Active nav link
+    if (btt) btt.classList.toggle('visible', window.scrollY > 400);
+    const nav = $('navbar');
+    if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
     updateActiveNav();
-    // AOS
     observeAOS();
-    // Counters
     checkCounters();
   }
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   window.addEventListener('scroll', handleScroll, { passive: true });
 
   /* ── HAMBURGER ── */
-  const hamburger = document.getElementById('hamburger');
-  const navMenu = document.getElementById('nav-menu');
-  hamburger.addEventListener('click', () => {
-    navMenu.classList.toggle('open');
-    const spans = hamburger.querySelectorAll('span');
-    if (navMenu.classList.contains('open')) {
-      spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
-      spans[1].style.opacity = '0';
-      spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
-    } else {
-      spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
-    }
-  });
-  navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      navMenu.classList.remove('open');
-      hamburger.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  const hamburger = $('hamburger');
+  const navMenu   = $('nav-menu');
+  if (hamburger && navMenu) {
+    hamburger.addEventListener('click', () => {
+      navMenu.classList.toggle('open');
+      const spans = hamburger.querySelectorAll('span');
+      if (navMenu.classList.contains('open')) {
+        spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+        spans[1].style.opacity   = '0';
+        spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+      } else {
+        spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+      }
     });
-  });
+    navMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('open');
+        hamburger.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+      });
+    });
+  }
 
   /* ── ACTIVE NAV ── */
   function updateActiveNav() {
-    const sections = document.querySelectorAll('section[id]');
+    const sections = $$('section[id]');
     let current = '';
     sections.forEach(sec => {
       if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
     });
-    document.querySelectorAll('.nav-menu a').forEach(a => {
+    $$('.nav-menu a').forEach(a => {
       a.classList.toggle('active', a.getAttribute('href') === '#' + current);
     });
   }
 
-  /* ── SMOOTH SCROLL FOR NAV LINKS ── */
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
+  /* ── SMOOTH SCROLL FOR ANCHOR LINKS ── */
+  $$('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const target = document.querySelector(a.getAttribute('href'));
       if (target) {
@@ -82,73 +93,73 @@
   });
 
   /* ── DARK MODE ── */
-  const themeBtn = document.getElementById('theme-toggle');
-  const root = document.documentElement;
-  const saved = localStorage.getItem('ks-theme') || 'light';
+  const themeBtn = $('theme-toggle');
+  const root     = document.documentElement;
+  const saved    = localStorage.getItem('ks-theme') || 'light';
   root.setAttribute('data-theme', saved);
-  themeBtn.innerHTML = saved === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  themeBtn.addEventListener('click', () => {
-    const isDark = root.getAttribute('data-theme') === 'dark';
-    const next = isDark ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem('ks-theme', next);
-    themeBtn.innerHTML = next === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  });
-
-  /* ── HERO SLIDER ── */
-  const slides = document.querySelectorAll('.hero-slide');
-  const dotsContainer = document.getElementById('heroDots');
-  let heroIdx = 0;
-  let heroTimer;
-
-  slides.forEach((_, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-    dot.addEventListener('click', () => goHero(i));
-    dotsContainer.appendChild(dot);
-  });
-
-  function goHero(idx) {
-    slides[heroIdx].classList.remove('active');
-    document.querySelectorAll('.hero-dot')[heroIdx].classList.remove('active');
-    heroIdx = (idx + slides.length) % slides.length;
-    slides[heroIdx].classList.add('active');
-    document.querySelectorAll('.hero-dot')[heroIdx].classList.add('active');
-    resetHeroTimer();
+  if (themeBtn) {
+    themeBtn.innerHTML = saved === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    themeBtn.addEventListener('click', () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      const next   = isDark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('ks-theme', next);
+      themeBtn.innerHTML = next === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
   }
-  function resetHeroTimer() {
-    clearInterval(heroTimer);
+
+  /* ── HERO SLIDER (index.html only) ── */
+  const slides       = $$('.hero-slide');
+  const dotsContainer = $('heroDots');
+  if (slides.length && dotsContainer) {
+    let heroIdx = 0;
+    let heroTimer;
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goHero(i));
+      dotsContainer.appendChild(dot);
+    });
+    function goHero(idx) {
+      slides[heroIdx].classList.remove('active');
+      $$('.hero-dot')[heroIdx].classList.remove('active');
+      heroIdx = ((idx % slides.length) + slides.length) % slides.length;
+      slides[heroIdx].classList.add('active');
+      $$('.hero-dot')[heroIdx].classList.add('active');
+      clearInterval(heroTimer);
+      heroTimer = setInterval(() => goHero(heroIdx + 1), 5500);
+    }
+    const heroPrev = $('heroPrev');
+    const heroNext = $('heroNext');
+    if (heroPrev) heroPrev.addEventListener('click', () => goHero(heroIdx - 1));
+    if (heroNext) heroNext.addEventListener('click', () => goHero(heroIdx + 1));
     heroTimer = setInterval(() => goHero(heroIdx + 1), 5500);
   }
-  document.getElementById('heroPrev').addEventListener('click', () => goHero(heroIdx - 1));
-  document.getElementById('heroNext').addEventListener('click', () => goHero(heroIdx + 1));
-  resetHeroTimer();
 
   /* ── AOS (scroll-trigger animations) ── */
   function observeAOS() {
-    document.querySelectorAll('[data-aos]:not(.aos-in)').forEach(el => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 80) {
+    $$('[data-aos]:not(.aos-in)').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight - 60) {
         el.classList.add('aos-in');
       }
     });
   }
-  observeAOS(); // run once on load
+  observeAOS();
+  setTimeout(observeAOS, 300);
 
-  /* ── COUNTER ANIMATION ── */
+  /* ── COUNTER ANIMATION (index.html only) ── */
   let countersRan = false;
   function checkCounters() {
     if (countersRan) return;
     const strip = document.querySelector('.stats-strip');
     if (!strip) return;
-    const rect = strip.getBoundingClientRect();
-    if (rect.top < window.innerHeight) {
+    if (strip.getBoundingClientRect().top < window.innerHeight) {
       countersRan = true;
-      document.querySelectorAll('.stat-num').forEach(el => {
-        const target = parseInt(el.dataset.count);
+      $$('.stat-num').forEach(el => {
+        const target   = parseInt(el.dataset.count);
         const duration = 2000;
-        const step = target / (duration / 16);
-        let current = 0;
+        const step     = target / (duration / 16);
+        let current    = 0;
         const timer = setInterval(() => {
           current += step;
           if (current >= target) { current = target; clearInterval(timer); }
@@ -158,165 +169,293 @@
     }
   }
 
-  /* ── SPECS TABS ── */
-  document.querySelectorAll('.spec-tab').forEach(tab => {
+  /* ── SPECS TABS (index.html) ── */
+  $$('.spec-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.spec-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.spec-panel').forEach(p => p.classList.remove('active'));
+      $$('.spec-tab').forEach(t  => t.classList.remove('active'));
+      $$('.spec-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      const panel = $('tab-' + tab.dataset.tab);
+      if (panel) panel.classList.add('active');
     });
   });
 
-  /* ── GALLERY FILTER ── */
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const gItems = document.querySelectorAll('.g-item');
+  /* ── GALLERY FILTER (index.html only) ── */
+  const filterBtns = $$('.filter-btn');
+  const gItems     = $$('.g-item');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const f = btn.dataset.filter;
-      gItems.forEach(item => {
-        const match = f === 'all' || item.dataset.cat === f;
-        item.classList.toggle('hidden', !match);
+      gItems.forEach(item => item.classList.toggle('hidden', f !== 'all' && item.dataset.cat !== f));
+    });
+  });
+
+  /* ── LIGHTBOX (index.html only) ── */
+  const lb = $('lightbox');
+  if (lb && gItems.length) {
+    const lbImg     = $('lb-img');
+    const lbCaption = $('lb-caption');
+    let lbImages    = [];
+    let lbIndex     = 0;
+
+    gItems.forEach(item => {
+      item.addEventListener('click', () => {
+        lbImages = Array.from($$('.g-item:not(.hidden)'));
+        lbIndex  = lbImages.indexOf(item);
+        openLb();
       });
     });
-  });
-
-  /* ── LIGHTBOX ── */
-  const lb = document.getElementById('lightbox');
-  const lbImg = document.getElementById('lb-img');
-  const lbCaption = document.getElementById('lb-caption');
-  let lbImages = [];
-  let lbIndex = 0;
-
-  gItems.forEach((item, i) => {
-    item.addEventListener('click', () => {
-      lbImages = Array.from(document.querySelectorAll('.g-item:not(.hidden)'));
-      lbIndex = lbImages.indexOf(item);
-      openLightbox();
+    function openLb() {
+      const item = lbImages[lbIndex];
+      if (!item) return;
+      lbImg.src = item.querySelector('img').src;
+      if (lbCaption) lbCaption.textContent = item.querySelector('.g-overlay span')?.textContent || '';
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLb() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+    const lbClose = $('lb-close');
+    const lbPrev  = $('lb-prev');
+    const lbNext  = $('lb-next');
+    if (lbClose) lbClose.addEventListener('click', closeLb);
+    lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+    if (lbPrev) lbPrev.addEventListener('click', () => { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; openLb(); });
+    if (lbNext) lbNext.addEventListener('click', () => { lbIndex = (lbIndex + 1) % lbImages.length; openLb(); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLb();
+      if (e.key === 'ArrowLeft')  { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; openLb(); }
+      if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % lbImages.length; openLb(); }
     });
-  });
-
-  function openLightbox() {
-    const item = lbImages[lbIndex];
-    if (!item) return;
-    lbImg.src = item.querySelector('img').src;
-    lbCaption.textContent = item.querySelector('.g-overlay span')?.textContent || '';
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
   }
-  document.getElementById('lb-close').addEventListener('click', closeLightbox);
-  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
-  document.getElementById('lb-prev').addEventListener('click', () => { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; openLightbox(); });
-  document.getElementById('lb-next').addEventListener('click', () => { lbIndex = (lbIndex + 1) % lbImages.length; openLightbox(); });
-  document.addEventListener('keydown', e => {
-    if (!lb.classList.contains('open')) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; openLightbox(); }
-    if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % lbImages.length; openLightbox(); }
-  });
-  function closeLightbox() { lb.classList.remove('open'); document.body.style.overflow = ''; }
 
-  /* ── TESTIMONIAL SLIDER ── */
-  const track = document.getElementById('testiTrack');
-  const cards = track.querySelectorAll('.testi-card');
-  const dotsWrap = document.getElementById('testiDots');
-  let tIdx = 0;
-  let perSlide = window.innerWidth < 580 ? 1 : 3;
+  /* ── TESTIMONIAL SLIDER (index.html only) ── */
+  const track = $('testiTrack');
+  if (track) {
+    const cards    = Array.from(track.querySelectorAll('.testi-card'));
+    const dotsWrap = $('testiDots');
+    let tIdx       = 0;
+    let autoTimer;
 
-  function buildTestiDots() {
-    dotsWrap.innerHTML = '';
-    const pages = Math.ceil(cards.length / perSlide);
-    for (let i = 0; i < pages; i++) {
-      const d = document.createElement('div');
-      d.className = 'testi-dot' + (i === 0 ? ' active' : '');
-      d.addEventListener('click', () => goTesti(i));
-      dotsWrap.appendChild(d);
+    /* Compute how many cards are visible based on container width */
+    function getPerSlide() {
+      const w = track.parentElement.offsetWidth;
+      if (w < 580) return 1;
+      if (w < 900) return 2;
+      return 3;
+    }
+
+    /* Get the step distance = one card width + one gap */
+    function getStepPx() {
+      if (!cards.length) return 0;
+      const cardW = cards[0].getBoundingClientRect().width;
+      // gap is 24px as set in CSS
+      return cardW + 24;
+    }
+
+    /* Total "pages" of cards */
+    function getPages() {
+      return Math.max(1, cards.length - getPerSlide() + 1);
+    }
+
+    /* Build navigation dots */
+    function buildDots() {
+      if (!dotsWrap) return;
+      dotsWrap.innerHTML = '';
+      const pages = getPages();
+      for (let i = 0; i < pages; i++) {
+        const d = document.createElement('div');
+        d.className = 'testi-dot' + (i === 0 ? ' active' : '');
+        d.addEventListener('click', () => goTo(i));
+        dotsWrap.appendChild(d);
+      }
+    }
+
+    /* Slide to index idx (clamped) */
+    function goTo(idx) {
+      const pages = getPages();
+      tIdx = Math.max(0, Math.min(idx, pages - 1));
+      const step = getStepPx();
+      track.style.transform = `translateX(-${tIdx * step}px)`;
+      if (dotsWrap) {
+        dotsWrap.querySelectorAll('.testi-dot').forEach((d, i) =>
+          d.classList.toggle('active', i === tIdx)
+        );
+      }
+    }
+
+    /* Next / Prev with wrapping */
+    function next() { goTo(tIdx + 1 >= getPages() ? 0 : tIdx + 1); }
+    function prev() { goTo(tIdx - 1 < 0 ? getPages() - 1 : tIdx - 1); }
+
+    /* Auto-play */
+    function startAuto() {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(next, 5500);
+    }
+
+    /* Recalculate on resize */
+    function setup() {
+      tIdx = 0;
+      track.style.transform = 'translateX(0)';
+      buildDots();
+      startAuto();
+    }
+
+    /* Initialise after fonts/images settle */
+    setTimeout(setup, 100);
+    window.addEventListener('resize', () => { setup(); });
+
+    /* Arrow buttons */
+    const testiPrev = $('testiPrev');
+    const testiNext = $('testiNext');
+    if (testiPrev) testiPrev.addEventListener('click', () => { prev(); startAuto(); });
+    if (testiNext) testiNext.addEventListener('click', () => { next(); startAuto(); });
+
+    /* Pause on hover */
+    track.parentElement.addEventListener('mouseenter', () => clearInterval(autoTimer));
+    track.parentElement.addEventListener('mouseleave', startAuto);
+
+    /* Touch / swipe support */
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); startAuto(); }
+    });
+  }
+
+  /* ── DEALER SEARCH (index.html only) ── */
+  const dealerSearchBtn = $('dealerSearchBtn');
+  if (dealerSearchBtn) {
+    const dealerInput = $('dealerSearch');
+    function runDealerSearch() {
+      const q = dealerInput ? dealerInput.value.toLowerCase().trim() : '';
+      $$('.dealer-item').forEach(item => {
+        item.style.display = q && !item.textContent.toLowerCase().includes(q) ? 'none' : '';
+      });
+    }
+    dealerSearchBtn.addEventListener('click', runDealerSearch);
+    if ($('dealerSearch')) {
+      $('dealerSearch').addEventListener('keyup', e => { if (e.key === 'Enter') runDealerSearch(); });
     }
   }
 
-  function goTesti(idx) {
-    const pages = Math.ceil(cards.length / perSlide);
-    tIdx = (idx + pages) % pages;
-    const offset = tIdx * (100 / perSlide);
-    // Each card takes 1/3 (or 1/1) of track width
-    track.style.transform = `translateX(-${tIdx * (100 / perSlide)}%)`;
-    // Actually compute per card width
-    const cardW = (track.parentElement.offsetWidth - 48) / perSlide;
-    track.style.transform = `translateX(-${tIdx * (cardW + 24) * perSlide}px)`;
-    dotsWrap.querySelectorAll('.testi-dot').forEach((d, i) => d.classList.toggle('active', i === tIdx));
-  }
+  /* ── CONTACT FORM (index.html only) ── */
+  const contactForm = $('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Basic validation
+      let valid = true;
+      this.querySelectorAll('[required]').forEach(field => {
+        if (!field.value.trim()) {
+          field.style.borderColor = '#e74c3c';
+          valid = false;
+        } else {
+          field.style.borderColor = '';
+        }
+      });
+      if (!valid) return;
 
-  // Simpler approach — translate by full slider width per "page"
-  function goTesti2(idx) {
-    const pages = Math.ceil(cards.length / perSlide);
-    tIdx = (idx + pages) % pages;
-    const sliderW = track.parentElement.offsetWidth;
-    track.style.transform = `translateX(-${tIdx * sliderW}px)`;
-    dotsWrap.querySelectorAll('.testi-dot').forEach((d, i) => d.classList.toggle('active', i === tIdx));
-  }
-
-  // Use full-width approach — make track children wrap into groups
-  // Simplest reliable approach: just shift by card count
-  function setupTestiSlider() {
-    perSlide = window.innerWidth < 580 ? 1 : 3;
-    buildTestiDots();
-    // Width of each card is 1/perSlide of container
-    cards.forEach(c => { c.style.minWidth = `calc(${100 / perSlide}% - ${perSlide > 1 ? '16px' : '0px'})`; });
-    goTesti(0);
-  }
-
-  setupTestiSlider();
-  window.addEventListener('resize', setupTestiSlider);
-
-  function goTesti(idx) {
-    const pages = Math.ceil(cards.length / perSlide);
-    tIdx = ((idx % pages) + pages) % pages;
-    const cardW = cards[0].offsetWidth + 24;
-    track.style.transform = `translateX(-${tIdx * perSlide * cardW}px)`;
-    if (dotsWrap) dotsWrap.querySelectorAll('.testi-dot').forEach((d, i) => d.classList.toggle('active', i === tIdx));
-  }
-
-  document.getElementById('testiPrev').addEventListener('click', () => goTesti(tIdx - 1));
-  document.getElementById('testiNext').addEventListener('click', () => goTesti(tIdx + 1));
-  setInterval(() => goTesti(tIdx + 1), 6000);
-
-  /* ── DEALER SEARCH ── */
-  document.getElementById('dealerSearchBtn').addEventListener('click', () => {
-    const q = document.getElementById('dealerSearch').value.toLowerCase();
-    document.querySelectorAll('.dealer-item').forEach(item => {
-      item.style.display = q && !item.textContent.toLowerCase().includes(q) ? 'none' : '';
+      const btn = this.querySelector('.btn-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+      setTimeout(() => {
+        btn.disabled  = false;
+        btn.innerHTML = 'Send Message <i class="fas fa-paper-plane"></i>';
+        const success = $('formSuccess');
+        if (success) {
+          success.classList.add('show');
+          setTimeout(() => success.classList.remove('show'), 6000);
+        }
+        this.reset();
+        this.querySelectorAll('input, textarea').forEach(f => f.style.borderColor = '');
+      }, 1800);
     });
-  });
-  document.getElementById('dealerSearch').addEventListener('keyup', e => {
-    if (e.key === 'Enter') document.getElementById('dealerSearchBtn').click();
-  });
+  }
 
-  /* ── CONTACT FORM ── */
-  document.getElementById('contactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = this.querySelector('.btn-submit');
+  /* ── NEWSLETTER (footer — works on ALL pages) ── */
+  function initNewsletterForms() {
+    $$('.newsletter-form').forEach(form => {
+      const input = form.querySelector('input[type="email"]');
+      const btn   = form.querySelector('button');
+      if (!input || !btn) return;
+
+      btn.addEventListener('click', () => handleNewsletter(input, btn, form));
+      input.addEventListener('keyup', e => {
+        if (e.key === 'Enter') handleNewsletter(input, btn, form);
+      });
+    });
+  }
+
+  function handleNewsletter(input, btn, form) {
+    const email = input.value.trim();
+
+    // Reset state
+    input.style.borderColor = '';
+    removeToast(form);
+
+    // Validate email
+    if (!email) {
+      input.style.borderColor = '#e74c3c';
+      input.focus();
+      showToast(form, 'Please enter your email address.', 'error');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      input.style.borderColor = '#e74c3c';
+      input.focus();
+      showToast(form, 'Please enter a valid email address.', 'error');
+      return;
+    }
+
+    // Sending state
+    const origHtml = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    // Simulate API call
     setTimeout(() => {
       btn.disabled = false;
-      btn.innerHTML = 'Send Message <i class="fas fa-paper-plane"></i>';
-      document.getElementById('formSuccess').classList.add('show');
-      this.reset();
-      setTimeout(() => document.getElementById('formSuccess').classList.remove('show'), 6000);
-    }, 1800);
-  });
+      btn.innerHTML = '<i class="fas fa-check"></i>';
+      btn.style.background = '#27ae60';
+      input.value = '';
+      input.style.borderColor = '#27ae60';
+      showToast(form, '✓ You\'re subscribed! Thank you.', 'success');
+
+      // Reset button after 3s
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.style.background = '';
+        input.style.borderColor = '';
+        removeToast(form);
+      }, 4000);
+    }, 1200);
+  }
+
+  function showToast(form, msg, type) {
+    removeToast(form);
+    const toast = document.createElement('div');
+    toast.className = 'nl-toast nl-toast--' + type;
+    toast.textContent = msg;
+    form.parentElement.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('nl-toast--visible'));
+  }
+
+  function removeToast(form) {
+    const existing = form.parentElement.querySelector('.nl-toast');
+    if (existing) existing.remove();
+  }
+
+  initNewsletterForms();
 
   /* ── PARALLAX ON HERO ── */
   window.addEventListener('scroll', () => {
     const hero = document.querySelector('.hero-content');
-    if (hero) {
-      hero.style.transform = `translateY(${window.scrollY * 0.35}px)`;
-    }
+    if (hero) hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
   }, { passive: true });
-
-  // Initial AOS trigger
-  setTimeout(observeAOS, 200);
 
 })();
