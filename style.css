@@ -1107,3 +1107,106 @@ section { padding: 100px 0; }
 }
 #formSuccess.show { display: block; animation: fadeInUp 0.4s ease; }
 
+/* ── FLOATING WHATSAPP WIDGET ── */
+.whatsapp-float {
+  position: fixed; bottom: 100px; right: 28px; z-index: 998;
+  display: flex; align-items: center; flex-direction: row-reverse;
+}
+.whatsapp-btn {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #25D366; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.75rem; box-shadow: 0 6px 24px rgba(37,211,102,0.45);
+  transition: transform 0.3s ease, box-shadow 0.3s ease; flex-shrink: 0;
+  position: relative;
+}
+.whatsapp-btn:hover { transform: scale(1.1); box-shadow: 0 10px 32px rgba(37,211,102,0.55); }
+.whatsapp-btn::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(37,211,102,0.5);
+  animation: waPulse 2.2s ease-out infinite;
+}
+@keyframes waPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  80% { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+.whatsapp-tooltip {
+  background: #fff; color: #1a1a1a; font-size: 0.82rem; font-weight: 600;
+  padding: 7px 14px; border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  white-space: nowrap; margin-right: 12px;
+  opacity: 0; transform: translateX(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.whatsapp-float:hover .whatsapp-tooltip { opacity: 1; transform: translateX(0); }
+@media (max-width: 768px) {
+  .whatsapp-float { bottom: 86px; right: 16px; }
+  .whatsapp-btn { width: 50px; height: 50px; font-size: 1.5rem; }
+}
+
+/* ── CATALOGUE BAND ── */
+.catalogue-band {
+  background: linear-gradient(135deg, #0f1f1c 0%, #1d4d44 60%, #0f1f1c 100%);
+  padding: 80px 0; text-align: center; position: relative; overflow: hidden;
+}
+.catalogue-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.catalogue-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(200,169,110,0.15); border: 2px solid rgba(200,169,110,0.4);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px; font-size: 2.2rem; color: var(--accent);
+}
+.catalogue-band h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800;
+  color: #fff; margin-bottom: 16px;
+}
+.catalogue-band p { color: rgba(255,255,255,0.78); font-size: 1.02rem; margin-bottom: 36px; line-height: 1.8; }
+.catalogue-features {
+  display: flex; gap: 24px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 36px;
+}
+.catalogue-feat {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 500;
+}
+.catalogue-feat i { color: var(--accent); font-size: 0.9rem; }
+.btn-catalogue-dl {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 40px; background: var(--accent);
+  color: #fff; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: 1rem; transition: var(--tran);
+  box-shadow: 0 8px 28px rgba(200,169,110,0.4);
+}
+.btn-catalogue-dl:hover { background: var(--accent-dark); transform: translateY(-3px); box-shadow: 0 14px 36px rgba(200,169,110,0.5); }
+@media (max-width: 768px) {
+  .catalogue-band { padding: 56px 0; }
+  .catalogue-features { gap: 14px; }
+  .btn-catalogue-dl { padding: 14px 32px; font-size: 0.95rem; }
+}
+
+/* ── SKU PRODUCT CODES GRID (kota-blue.html) ── */
+.sku-section { background: var(--light); }
+.sku-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.sku-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 24px;
+  transition: var(--tran); position: relative; overflow: hidden;
+}
+.sku-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.sku-code {
+  display: inline-block; font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 2px;
+  color: var(--accent); background: rgba(200,169,110,0.12);
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 14px;
+}
+.sku-card h4 { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: var(--dark); }
+.sku-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px; }
+.sku-finish-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 600; color: var(--primary);
+  background: rgba(42,107,95,0.1); padding: 4px 12px; border-radius: 100px;
+}
+@media (max-width: 900px) { .sku-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 580px) { .sku-grid { grid-template-columns: 1fr; } }
