@@ -46,28 +46,95 @@
   }
   window.addEventListener('scroll', handleScroll, { passive: true });
 
-  /* ── HAMBURGER ── */
-  const hamburger = $('hamburger');
-  const navMenu   = $('nav-menu');
-  if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
-      navMenu.classList.toggle('open');
-      const spans = hamburger.querySelectorAll('span');
-      if (navMenu.classList.contains('open')) {
+  /* ── MOBILE DRAWER ── */
+  // Inject drawer HTML once
+  (function injectMobileUI() {
+    // Build nav links from existing desktop nav
+    const desktopLinks = $$('.nav-menu a');
+    let drawerLinks = '';
+    const iconMap = {
+      'home': 'fa-home', 'about': 'fa-info-circle', 'variants': 'fa-layer-group',
+      'finishes': 'fa-paint-brush', 'applications': 'fa-th-large',
+      'gallery': 'fa-images', 'why': 'fa-star', 'specs': 'fa-ruler-combined',
+      'dealers': 'fa-map-marker-alt', 'testimonials': 'fa-quote-left',
+      'blog': 'fa-newspaper', 'contact': 'fa-envelope'
+    };
+    desktopLinks.forEach(a => {
+      const href = a.getAttribute('href');
+      const text = a.textContent.trim();
+      const key  = href.replace('#', '').toLowerCase();
+      const icon = iconMap[key] || 'fa-chevron-right';
+      drawerLinks += `<a href="${href}"><i class="fas ${icon}"></i>${text}</a>`;
+    });
+    // If no nav links found (inner pages), build minimal set
+    if (!drawerLinks) {
+      drawerLinks = `<a href="index.html"><i class="fas fa-home"></i>Home</a>
+        <a href="index.html#variants"><i class="fas fa-layer-group"></i>Variants</a>
+        <a href="index.html#gallery"><i class="fas fa-images"></i>Gallery</a>
+        <a href="index.html#contact"><i class="fas fa-envelope"></i>Contact</a>`;
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <nav id="mobile-drawer" aria-label="Mobile navigation">
+        <div class="drawer-header">
+          <div class="drawer-logo">KOTA<span>STONE</span></div>
+          <button class="drawer-close" id="drawer-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="drawer-nav">${drawerLinks}</div>
+        <div class="drawer-footer">
+          <a href="index.html#contact" class="drawer-cta"><i class="fas fa-book-open"></i>&nbsp;Get Free Catalogue</a>
+          <div class="drawer-theme-row">
+            <span>Theme</span>
+            <button id="drawer-theme" style="background:none;border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;color:var(--text);font-size:0.85rem;">Toggle</button>
+          </div>
+        </div>
+      </nav>
+      <div id="mobile-sticky-cta">
+        <a href="tel:+919828001223" class="mcta-call"><i class="fas fa-phone-alt"></i> Call Now</a>
+        <a href="index.html#contact" class="mcta-catalogue"><i class="fas fa-book-open"></i> Get Catalogue</a>
+      </div>
+    `);
+
+    const drawer  = $('mobile-drawer');
+    const overlay = $('nav-overlay');
+    const drawerClose = $('drawer-close');
+    const hamburger   = $('hamburger');
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      if (hamburger) {
+        const spans = hamburger.querySelectorAll('span');
         spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
         spans[1].style.opacity   = '0';
         spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
-      } else {
-        spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
       }
-    });
-    navMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('open');
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      if (hamburger) {
         hamburger.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+      }
+    }
+
+    if (hamburger) hamburger.addEventListener('click', openDrawer);
+    if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+
+    // Drawer theme toggle mirrors main theme toggle
+    const dTheme = $('drawer-theme');
+    if (dTheme) {
+      dTheme.addEventListener('click', () => {
+        const mainTheme = $('theme-toggle');
+        if (mainTheme) mainTheme.click();
       });
-    });
-  }
+    }
+  })();
 
   /* ── ACTIVE NAV ── */
   function updateActiveNav() {
@@ -228,6 +295,18 @@
       if (e.key === 'Escape') closeLb();
       if (e.key === 'ArrowLeft')  { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; openLb(); }
       if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % lbImages.length; openLb(); }
+    });
+
+    /* Touch swipe for lightbox on mobile */
+    let lbTouchX = 0;
+    lb.addEventListener('touchstart', e => { lbTouchX = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', e => {
+      const diff = lbTouchX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) { lbIndex = (lbIndex + 1) % lbImages.length; }
+        else          { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; }
+        openLb();
+      }
     });
   }
 
@@ -452,10 +531,12 @@
 
   initNewsletterForms();
 
-  /* ── PARALLAX ON HERO ── */
-  window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero-content');
-    if (hero) hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
-  }, { passive: true });
+  /* ── PARALLAX ON HERO (desktop only for performance) ── */
+  if (window.innerWidth > 768) {
+    window.addEventListener('scroll', () => {
+      const hero = document.querySelector('.hero-content');
+      if (hero) hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+    }, { passive: true });
+  }
 
 })();

@@ -212,7 +212,62 @@
   .apps-list { grid-template-columns: 1fr; }
   .pg-grid { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 580px) {
+@media (max-width: 768px) {
+  /* Inner hero */
+  .inner-hero { height: 55vh; min-height: 380px; }
+  .inner-hero-content h1 { font-size: clamp(1.7rem, 7vw, 2.6rem); }
+  .inner-hero-content p { font-size: 0.9rem; margin-bottom: 20px; }
+  .breadcrumb { font-size: 0.78rem; gap: 6px; bottom: 14px; }
+
+  /* Overview */
+  .overview-grid { grid-template-columns: 1fr; gap: 32px; }
+  .overview-img img { height: 240px; }
+  .color-badge { top: 12px; left: 12px; padding: 10px 14px; gap: 8px; }
+  .color-swatch { width: 28px; height: 28px; }
+  .overview-text h2 { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .tag-row { gap: 8px; }
+
+  /* Features */
+  .features-grid { grid-template-columns: 1fr; gap: 14px; }
+  .feature-card { padding: 24px 20px; }
+  .feature-icon { width: 56px; height: 56px; font-size: 1.5rem; margin-bottom: 14px; }
+
+  /* Specs */
+  .specs-two-col { grid-template-columns: 1fr; gap: 28px; }
+  .data-table th, .data-table td { padding: 12px 14px; font-size: 0.88rem; }
+  .available-sizes li { padding: 10px 14px; font-size: 0.86rem; }
+
+  /* Applications (inner) */
+  .apps-list { grid-template-columns: 1fr; gap: 14px; }
+  .app-item { padding: 18px; }
+
+  /* Page gallery */
+  .pg-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pg-item { height: 160px; }
+  /* Show overlay on mobile */
+  .pg-item-overlay { opacity: 1; background: rgba(42,107,95,0.5); font-size: 1.4rem; }
+
+  /* CTA banner */
+  .cta-banner { padding: 48px 0; }
+  .cta-banner h2 { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .cta-banner p { font-size: 0.9rem; }
+  .cta-btns { flex-direction: column; align-items: center; gap: 12px; }
+  .btn-cta-primary, .btn-cta-outline {
+    width: 100%; max-width: 280px; justify-content: center; padding: 13px 24px;
+  }
+
+  /* Blog article */
+  .article-grid { grid-template-columns: 1fr; }
+  .article-sidebar { position: static; }
+  .article-content h2 { font-size: 1.35rem; margin: 24px 0 12px; }
+  .article-content h3 { font-size: 1.1rem; }
+  .article-img img { height: 220px; }
+  .sidebar-card { padding: 20px; }
+  .comparison-table th, .comparison-table td { padding: 10px 12px; font-size: 0.85rem; }
+}
+@media (max-width: 480px) {
+  .inner-hero { height: 50vh; min-height: 320px; }
+  .pg-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pg-item { height: 130px; }
   .features-grid { grid-template-columns: 1fr; }
-  .inner-hero { height: 55vh; min-height: 420px; }
 }
