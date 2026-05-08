@@ -201,18 +201,37 @@
     if (heroPrev) heroPrev.addEventListener('click', () => goHero(heroIdx - 1));
     if (heroNext) heroNext.addEventListener('click', () => goHero(heroIdx + 1));
     heroTimer = setInterval(() => goHero(heroIdx + 1), 5500);
+
+    /* Touch swipe support for hero slider on mobile */
+    let heroTouchX = 0;
+    const heroSection = document.querySelector('.hero');
+    if (heroSection) {
+      heroSection.addEventListener('touchstart', e => {
+        heroTouchX = e.touches[0].clientX;
+      }, { passive: true });
+      heroSection.addEventListener('touchend', e => {
+        const diff = heroTouchX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+          diff > 0 ? goHero(heroIdx + 1) : goHero(heroIdx - 1);
+        }
+      }, { passive: true });
+    }
   }
 
   /* ── AOS (scroll-trigger animations) ── */
   function observeAOS() {
+    /* Lower offset on mobile so elements animate sooner when in viewport */
+    const offset = window.innerWidth <= 768 ? 20 : 60;
     $$('[data-aos]:not(.aos-in)').forEach(el => {
-      if (el.getBoundingClientRect().top < window.innerHeight - 60) {
+      if (el.getBoundingClientRect().top < window.innerHeight - offset) {
         el.classList.add('aos-in');
       }
     });
   }
   observeAOS();
   setTimeout(observeAOS, 300);
+  /* Extra trigger for mobile — some devices fire scroll late after first render */
+  setTimeout(observeAOS, 800);
 
   /* ── COUNTER ANIMATION (index.html only) ── */
   let countersRan = false;
@@ -399,10 +418,16 @@
 
     /* Touch / swipe support */
     let touchStartX = 0;
-    track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      /* Pause auto-play while user is touching */
+      clearInterval(autoTimer);
+    }, { passive: true });
     track.addEventListener('touchend', e => {
       const diff = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); startAuto(); }
+      if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+      /* Resume auto-play after touch */
+      startAuto();
     });
   }
 
@@ -418,7 +443,9 @@
     }
     dealerSearchBtn.addEventListener('click', runDealerSearch);
     if ($('dealerSearch')) {
+      /* Use both keyup and keydown for compatibility with mobile IME keyboards */
       $('dealerSearch').addEventListener('keyup', e => { if (e.key === 'Enter') runDealerSearch(); });
+      $('dealerSearch').addEventListener('keydown', e => { if (e.key === 'Enter') runDealerSearch(); });
     }
   }
 
@@ -537,6 +564,21 @@
       const hero = document.querySelector('.hero-content');
       if (hero) hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
     }, { passive: true });
+  }
+
+  /* ── VARIANT CARDS: mobile touch-to-show overlay ── */
+  /* On touch devices, hover doesn't fire, so we toggle an 'active' class on tap
+     to reveal the overlay. Desktop hover still works via CSS. */
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    $$('.variant-card').forEach(card => {
+      card.addEventListener('touchstart', function() {
+        /* Close all other open cards first */
+        $$('.variant-card.touch-active').forEach(c => {
+          if (c !== this) c.classList.remove('touch-active');
+        });
+        this.classList.toggle('touch-active');
+      }, { passive: true });
+    });
   }
 
 })();

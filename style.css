@@ -403,7 +403,8 @@ section { padding: 100px 0; }
   display: flex; align-items: flex-end; justify-content: center;
   padding-bottom: 28px; opacity: 0; transition: var(--tran);
 }
-.variant-card:hover .variant-overlay { opacity: 1; }
+.variant-card:hover .variant-overlay,
+.variant-card.touch-active .variant-overlay { opacity: 1; }
 .btn-view {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 24px; background: var(--accent);
@@ -639,6 +640,7 @@ section { padding: 100px 0; }
   gap: 24px;
   transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
+  touch-action: pan-y;
 }
 .testi-card {
   flex: 0 0 calc((100% - 48px) / 3); /* 3 visible, 2 gaps of 24px */
@@ -672,6 +674,13 @@ section { padding: 100px 0; }
 }
 @media (max-width: 580px) {
   .testi-card { flex: 0 0 100%; } /* 1 visible */
+}
+
+/* ── SPEC TABLE: mobile scroll wrapper ── */
+.spec-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius);
 }
 
 /* ── BLOG ── */
@@ -842,6 +851,21 @@ section { padding: 100px 0; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 
+/* ── GALLERY FILTERS: allow horizontal scroll on mobile ── */
+@media (max-width: 768px) {
+  .gallery-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .gallery-filters::-webkit-scrollbar { display: none; }
+  .filter-btn { flex-shrink: 0; scroll-snap-align: start; }
+}
+
 /* ═══════════════════════════════════════════════════════════
    MOBILE REDESIGN — max-width: 768px
    Desktop styles are NOT touched above this breakpoint.
@@ -878,8 +902,8 @@ section { padding: 100px 0; }
     padding: 14px 24px; justify-content: center;
     font-size: 0.92rem;
   }
-  .hero-prev, .hero-next { width: 38px; height: 38px; font-size: 13px; }
-  .hero-nav { padding: 0 12px; }
+  .hero-prev, .hero-next { width: 44px; height: 44px; font-size: 14px; }
+  .hero-nav { padding: 0 10px; }
   .hero-scroll-hint { display: none; }
   .hero-dots { bottom: 20px; right: 16px; gap: 6px; }
   .hero-dot { width: 6px; height: 6px; }
@@ -896,32 +920,27 @@ section { padding: 100px 0; }
   /* ── STATS STRIP ── */
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .stat-item { padding: 32px 16px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .stat-item:nth-child(3),
+  .stat-item:nth-child(4) { border-bottom: none; }
   .stat-num { font-size: 2.4rem; }
 
   /* ── ABOUT ── */
   .about-grid { grid-template-columns: 1fr; gap: 40px; }
   .about-img-wrap img { height: 260px; }
-  .about-badge-card { right: 8px; bottom: -18px; padding: 14px 16px; gap: 10px; }
+  .about-img-wrap { overflow: visible; margin-bottom: 24px; }
+  .about-badge-card { right: 8px; bottom: -18px; padding: 14px 16px; gap: 10px; max-width: calc(100% - 16px); }
   .about-badge-card i { font-size: 1.5rem; }
   .about-text { padding-left: 0; }
   .about-text h2 { font-size: clamp(1.5rem, 6vw, 2rem); }
-  .benefits-grid { grid-template-columns: 1fr; gap: 12px; }
+  .benefits-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .benefit-card { padding: 16px; }
 
   /* ── VARIANTS ── */
-  .variants-grid { grid-template-columns: 1fr; gap: 20px; }
-  .variant-img { height: 220px; }
-  /* Enable horizontal scroll for variants on mobile */
-  .variants-scroll-wrapper {
-    display: flex; gap: 16px;
-    overflow-x: auto; padding-bottom: 8px;
-    scrollbar-width: none; -ms-overflow-style: none;
-    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-  }
-  .variants-scroll-wrapper::-webkit-scrollbar { display: none; }
-  .variants-scroll-wrapper .variant-card {
-    flex: 0 0 80vw; scroll-snap-align: start;
-  }
+  .variants-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .variant-img { height: 200px; }
+  /* Always show the view button on mobile (no hover available) */
+  .variant-overlay { opacity: 1; background: linear-gradient(to top, rgba(42,107,95,0.88), transparent); }
+  .btn-view { padding: 8px 16px; font-size: 0.82rem; }
 
   /* ── FINISHES ── */
   .finishes-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -943,6 +962,8 @@ section { padding: 100px 0; }
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 150px; gap: 8px;
   }
+  /* Reset tall items so they don't create uneven rows on mobile 2-col */
+  .g-item.tall { grid-row: span 1; }
   .g-item { border-radius: 8px; }
   /* Always show gallery overlay on mobile */
   .g-overlay { opacity: 1; background: rgba(42,107,95,0.55); }
@@ -963,10 +984,19 @@ section { padding: 100px 0; }
   .why-icon { width: 60px; height: 60px; font-size: 1.6rem; }
 
   /* ── SPECS ── */
-  .specs-tabs { gap: 6px; }
-  .spec-tab { padding: 10px 20px; font-size: 0.82rem; }
+  .specs-tabs {
+    gap: 6px; flex-wrap: nowrap;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px; justify-content: flex-start;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .specs-tabs::-webkit-scrollbar { display: none; }
+  .spec-tab { padding: 10px 20px; font-size: 0.82rem; flex-shrink: 0; }
   .spec-cards { grid-template-columns: 1fr 1fr; gap: 12px; }
   .spec-card { padding: 20px 16px; }
+  /* Wrap spec table in scrollable container via CSS */
+  .spec-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .spec-table thead, .spec-table tbody, .spec-table tr { display: table; width: 100%; table-layout: fixed; }
   .spec-table th, .spec-table td { padding: 12px 14px; font-size: 0.88rem; }
 
   /* ── DEALERS ── */
@@ -980,6 +1010,7 @@ section { padding: 100px 0; }
   /* ── TESTIMONIALS ── */
   .testi-card { flex: 0 0 100%; padding: 24px 20px; }
   .testi-card > p { font-size: 0.9rem; }
+  .testi-slider { touch-action: pan-y; }
   .testi-controls button { width: 40px; height: 40px; font-size: 13px; }
 
   /* ── BLOG ── */
@@ -990,14 +1021,18 @@ section { padding: 100px 0; }
 
   /* ── CONTACT ── */
   .contact-grid { grid-template-columns: 1fr; gap: 32px; }
-  .contact-form-wrap { padding: 24px 16px; }
+  .contact-form-wrap { padding: 24px 16px; border-radius: var(--radius-sm); }
   .contact-info h2 { font-size: clamp(1.5rem, 6vw, 2rem); }
   .form-row { grid-template-columns: 1fr; gap: 16px; }
   .form-group input,
   .form-group select,
-  .form-group textarea { padding: 14px 16px; font-size: 1rem; }
+  .form-group textarea {
+    padding: 14px 16px; font-size: 1rem;
+    /* Prevent iOS auto-zoom on focus (font-size must be >= 16px) */
+    -webkit-text-size-adjust: 100%;
+  }
   .form-group textarea { min-height: 110px; }
-  .btn-submit { width: 100%; justify-content: center; padding: 15px; font-size: 1rem; }
+  .btn-submit { width: 100%; justify-content: center; padding: 15px; font-size: 1rem; min-height: 52px; }
 
   /* ── FOOTER ── */
   .footer-grid { grid-template-columns: 1fr; gap: 28px; padding: 48px 16px 40px; }
@@ -1006,7 +1041,7 @@ section { padding: 100px 0; }
   .footer-logo { font-size: 1.5rem; }
 
   /* ── BACK TO TOP — repositioned above sticky CTA ── */
-  #back-to-top { bottom: 80px; right: 16px; width: 44px; height: 44px; font-size: 14px; }
+  #back-to-top { bottom: 84px; right: 16px; width: 44px; height: 44px; font-size: 14px; }
 
   /* ── BUTTONS ── */
   .btn-primary, .btn-outline {
@@ -1025,6 +1060,13 @@ section { padding: 100px 0; }
   .spec-cards { grid-template-columns: 1fr; }
   .about-img-wrap img { height: 220px; }
   .about-badge-card { display: none; }
+  /* 2-col variants still works at 480px, switch to 1-col at very small */
+  .variants-grid { grid-template-columns: 1fr; }
+  /* Newsletter form: prevent squishing */
+  .newsletter-form { flex-direction: row; }
+  .newsletter-form input { min-width: 0; font-size: 0.85rem; }
+  /* Contact form padding */
+  .contact-form-wrap { padding: 20px 14px; }
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -1141,8 +1183,11 @@ section { padding: 100px 0; }
 }
 .whatsapp-float:hover .whatsapp-tooltip { opacity: 1; transform: translateX(0); }
 @media (max-width: 768px) {
-  .whatsapp-float { bottom: 86px; right: 16px; }
+  /* Raised slightly so it never overlaps the back-to-top button */
+  .whatsapp-float { bottom: 132px; right: 16px; }
   .whatsapp-btn { width: 50px; height: 50px; font-size: 1.5rem; }
+  /* Hide tooltip on mobile — not needed on touch devices */
+  .whatsapp-tooltip { display: none; }
 }
 
 /* ── CATALOGUE BAND ── */
