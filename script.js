@@ -91,8 +91,8 @@
         </div>
       </nav>
       <div id="mobile-sticky-cta">
-        <a href="tel:+919828001223" class="mcta-call"><i class="fas fa-phone-alt"></i> Call Now</a>
-        <a href="index.html#contact" class="mcta-catalogue"><i class="fas fa-book-open"></i> Get Catalogue</a>
+        <a href="tel:+918619459354" class="mcta-call"><i class="fas fa-phone-alt"></i> Call Now</a>
+        <a href="../outputs/catalogue.pdf" class="mcta-catalogue"><i class="fas fa-book-open"></i> Get Catalogue</a>
       </div>
     `);
 

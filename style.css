@@ -603,34 +603,72 @@ section { padding: 100px 0; }
 .spec-table tr:last-child td { border-bottom: none; }
 .spec-table tr:hover td { background: rgba(42,107,95,0.05); }
 
-/* ── DEALERS ── */
+/* ── VISIT US / LOCATION ── */
 .dealers { background: var(--white); }
-.dealer-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-.search-box { display: flex; margin-bottom: 24px; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow); }
-.search-box input {
-  flex: 1; padding: 14px 20px; border: 1px solid var(--border);
-  background: var(--light); color: var(--text); font-size: 0.95rem;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm); outline: none;
+.location-wrap { width: 100%; }
+.location-map-box {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
 }
-#dealerSearchBtn {
-  padding: 14px 24px; background: var(--primary);
-  color: #fff; border: none; font-size: 0.9rem; font-weight: 600;
-  cursor: pointer; transition: var(--tran); white-space: nowrap;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+.location-map-box iframe {
+  width: 100%; height: 100%; border: none; display: block;
+  /* Prevent iframe from creating horizontal scroll on iOS */
+  max-width: 100%;
 }
-#dealerSearchBtn:hover { background: var(--primary-dark); }
-.dealer-item {
-  display: flex; gap: 16px; padding: 20px;
-  background: var(--light); border-radius: var(--radius-sm);
-  border: 1px solid var(--border); margin-bottom: 12px;
-  transition: var(--tran);
+/* Floating Info Card (desktop only) */
+.location-info-card {
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(42,107,95,0.18);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  max-width: 320px;
+  width: calc(100% - 56px); /* never bleed out of map */
+  box-sizing: border-box;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  z-index: 10;
 }
-.dealer-item:hover { border-color: var(--primary); box-shadow: var(--shadow); }
-.dealer-item > i { font-size: 1.4rem; color: var(--primary); margin-top: 4px; flex-shrink: 0; }
-.dealer-item strong { display: block; font-weight: 700; margin-bottom: 4px; }
-.dealer-item span { display: block; font-size: 0.85rem; color: var(--text-muted); }
-.dealer-map { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); height: 400px; }
-.dealer-map iframe { width: 100%; height: 100%; border: none; }
+[data-theme="dark"] .location-info-card {
+  background: rgba(22,38,36,0.96);
+  border-color: rgba(200,169,110,0.25);
+}
+.lic-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.lic-header i { font-size: 1.4rem; color: var(--primary); flex-shrink: 0; }
+.lic-header strong { font-family: 'Montserrat', sans-serif; font-size: 1.05rem; font-weight: 800; color: var(--dark); }
+[data-theme="dark"] .lic-header strong { color: #fff; }
+.location-info-card p {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 0.88rem; color: var(--text-muted);
+  margin-bottom: 10px; line-height: 1.6;
+  word-break: break-word; /* prevent long text from overflowing */
+}
+.location-info-card p i { color: var(--primary); margin-top: 3px; flex-shrink: 0; font-size: 0.9rem; }
+/* Phone: allow wrap so two numbers don't overflow on narrow cards */
+.lic-phone .lic-phones { display: flex; flex-direction: column; gap: 2px; }
+.btn-directions {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 6px;
+  padding: 13px 24px;  /* min 44px tap target height */
+  min-height: 48px;
+  background: var(--primary);
+  color: #fff; border-radius: var(--radius-sm);
+  font-size: 0.88rem; font-weight: 700;
+  transition: var(--tran); width: 100%; justify-content: center;
+  letter-spacing: 0.4px;
+  box-sizing: border-box;
+}
+.btn-directions:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(42,107,95,0.35); }
 
 /* ── TESTIMONIALS ── */
 .testimonials { background: var(--light); }
@@ -847,7 +885,9 @@ section { padding: 100px 0; }
   .gallery-masonry { grid-template-columns: repeat(2, 1fr); }
   .why-grid { grid-template-columns: 1fr 1fr; }
   .blog-grid { grid-template-columns: 1fr 1fr; }
-  .dealer-wrap { grid-template-columns: 1fr; }
+  /* ── VISIT US: tablet (769–900px) ── */
+  .location-map-box { height: 440px; }
+  .location-info-card { max-width: 300px; padding: 20px 22px; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 
@@ -999,13 +1039,39 @@ section { padding: 100px 0; }
   .spec-table thead, .spec-table tbody, .spec-table tr { display: table; width: 100%; table-layout: fixed; }
   .spec-table th, .spec-table td { padding: 12px 14px; font-size: 0.88rem; }
 
-  /* ── DEALERS ── */
-  .dealer-wrap { grid-template-columns: 1fr; }
-  .search-box { flex-direction: row; }
-  .search-box input { font-size: 0.88rem; padding: 12px 14px; }
-  #dealerSearchBtn { padding: 12px 18px; font-size: 0.85rem; }
-  .dealer-item { padding: 16px; gap: 12px; }
-  .dealer-map { height: 300px; }
+  /* ── VISIT US: mobile ── */
+  .dealers { padding-bottom: 0; } /* section padding handled by section rule */
+  .location-map-box {
+    height: 320px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0; /* flat bottom, card connects flush */
+    box-shadow: none; /* shadow on the wrapper instead */
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.14));
+  }
+  .location-info-card {
+    /* Pull out of absolute flow — stack below map */
+    position: static;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-top: 3px solid var(--primary);
+    margin-top: 0;
+    padding: 20px 16px 24px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--white);
+  }
+  [data-theme="dark"] .location-info-card { background: var(--white); } /* uses --white from dark tokens */
+  .location-wrap {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .lic-header strong { font-size: 1rem; }
+  .lic-header i { font-size: 1.2rem; }
+  .location-info-card p { font-size: 0.85rem; gap: 8px; margin-bottom: 8px; }
+  .btn-directions { font-size: 0.9rem; padding: 14px 20px; margin-top: 10px; }
 
   /* ── TESTIMONIALS ── */
   .testi-card { flex: 0 0 100%; padding: 24px 20px; }
@@ -1067,6 +1133,31 @@ section { padding: 100px 0; }
   .newsletter-form input { min-width: 0; font-size: 0.85rem; }
   /* Contact form padding */
   .contact-form-wrap { padding: 20px 14px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   LOCATION SECTION — granular mobile sub-breakpoints
+   Ensures map + info card feel premium at every phone size.
+   ───────────────────────────────────────────────────────── */
+
+/* 375px: iPhone SE (2020), iPhone 12 mini, Galaxy A series */
+@media (max-width: 375px) {
+  .location-map-box { height: 280px; }
+  .location-info-card { padding: 16px 14px 20px; }
+  .lic-header strong { font-size: 0.95rem; }
+  .location-info-card p { font-size: 0.82rem; }
+  .btn-directions { font-size: 0.85rem; padding: 13px 16px; }
+}
+
+/* 320px: iPhone SE (1st gen), smallest Android budget phones */
+@media (max-width: 320px) {
+  .location-map-box { height: 240px; }
+  .location-info-card { padding: 14px 12px 18px; }
+  .lic-header { gap: 8px; margin-bottom: 10px; }
+  .lic-header strong { font-size: 0.9rem; }
+  .lic-header i { font-size: 1.1rem; }
+  .location-info-card p { font-size: 0.8rem; gap: 6px; margin-bottom: 7px; }
+  .btn-directions { font-size: 0.82rem; padding: 12px 14px; min-height: 44px; }
 }
 
 /* ─────────────────────────────────────────────────────────
