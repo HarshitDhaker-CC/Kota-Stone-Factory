@@ -83,7 +83,7 @@
         </div>
         <div class="drawer-nav">${drawerLinks}</div>
         <div class="drawer-footer">
-          <a href="../outputs/catalogue.pdf" class="drawer-cta"><i class="fas fa-book-open"></i>&nbsp;Get Free Catalogue</a>
+          <a href="./Assets/catalogue.pdf" class="drawer-cta"><i class="fas fa-book-open"></i>&nbsp;Get Free Catalogue</a>
           <div class="drawer-theme-row">
             <span>Theme</span>
             <button id="drawer-theme" style="background:none;border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;color:var(--text);font-size:0.85rem;">Toggle</button>
@@ -92,7 +92,7 @@
       </nav>
       <div id="mobile-sticky-cta">
         <a href="tel:+918619459354" class="mcta-call"><i class="fas fa-phone-alt"></i> Call Now</a>
-        <a href="../outputs/catalogue.pdf" class="mcta-catalogue"><i class="fas fa-book-open"></i> Get Catalogue</a>
+        <a href="./Assets/catalogue.pdf" class="mcta-catalogue"><i class="fas fa-book-open"></i> Get Catalogue</a>
       </div>
     `);
 
@@ -451,7 +451,7 @@
 
   /* ── CONTACT FORM (index.html only) ── */
   /* !! Replace this URL with your deployed Railway/Render backend URL !! */
-  const API_BASE = 'http://localhost:3000';
+  const API_BASE = 'https://kota-stone-factory.onrender.com';
 
   const contactForm = $('contactForm');
   if (contactForm) {
