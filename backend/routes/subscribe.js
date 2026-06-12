@@ -33,8 +33,11 @@ router.post('/', limiter, validateSubscribe, async (req, res) => {
 
     await Subscriber.create({ email });
 
-    // Welcome email
-    await sendEmail({
+    // ✅ Respond to user IMMEDIATELY — don't make them wait for email
+    res.json({ success: true, message: "You're subscribed! Thank you." });
+
+    // Send welcome email in background (user doesn't wait)
+    sendEmail({
       to: email,
       subject: 'Welcome to Kota Stone Factory Newsletter',
       html: `
@@ -54,9 +57,7 @@ router.post('/', limiter, validateSubscribe, async (req, res) => {
           <p style="color:#888; font-size:12px;">Kota Stone Factory, Kota, Rajasthan, India</p>
         </div>
       `
-    });
-
-    res.json({ success: true, message: "You're subscribed! Thank you." });
+    }).catch(err => console.error('Subscribe email error:', err));
 
   } catch (err) {
     console.error('Subscribe route error:', err);

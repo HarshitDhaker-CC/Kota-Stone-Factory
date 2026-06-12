@@ -34,44 +34,45 @@ router.post('/', limiter, validateContact, async (req, res) => {
     // Save to MongoDB
     await Contact.create({ name, email, phone, enquiryType: enquiry, message });
 
-    // Email to business owner
-    await sendEmail({
-      to: process.env.OWNER_EMAIL,
-      subject: `New Enquiry from ${name} — Kota Stone Factory`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #8B4513;">New Contact Enquiry</h2>
-          <table style="width:100%; border-collapse: collapse;">
-            <tr><td style="padding:8px; font-weight:bold; color:#555;">Name</td><td style="padding:8px;">${name}</td></tr>
-            <tr style="background:#f9f9f9;"><td style="padding:8px; font-weight:bold; color:#555;">Email</td><td style="padding:8px;"><a href="mailto:${email}">${email}</a></td></tr>
-            <tr><td style="padding:8px; font-weight:bold; color:#555;">Phone</td><td style="padding:8px;">${phone || 'Not provided'}</td></tr>
-            <tr style="background:#f9f9f9;"><td style="padding:8px; font-weight:bold; color:#555;">Enquiry Type</td><td style="padding:8px;">${enquiry || 'General Enquiry'}</td></tr>
-            <tr><td style="padding:8px; font-weight:bold; color:#555;">Message</td><td style="padding:8px;">${message}</td></tr>
-          </table>
-          <p style="color:#888; font-size:12px; margin-top:20px;">Received at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
-        </div>
-      `
-    });
-
-    // Thank-you auto-reply to customer
-    await sendEmail({
-      to: email,
-      subject: 'Thank you for contacting Kota Stone Factory',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #8B4513;">Thank You, ${name}!</h2>
-          <p>We've received your enquiry and will get back to you within <strong>24 hours</strong>.</p>
-          <p><strong>Your message:</strong><br/>${message}</p>
-          <hr style="border:none; border-top:1px solid #eee; margin: 20px 0;"/>
-          <p>For urgent queries, call us directly:</p>
-          <p>📞 <strong>+91 86194 59354</strong> &nbsp;|&nbsp; <strong>+91 90797 75779</strong></p>
-          <p>💬 <a href="https://wa.me/918619459354">Chat on WhatsApp</a></p>
-          <p style="color:#888; font-size:12px; margin-top:20px;">Kota Stone Factory, Kota, Rajasthan, India</p>
-        </div>
-      `
-    });
-
+    // ✅ Respond to user IMMEDIATELY — don't make them wait for emails
     res.json({ success: true, message: "Thank you! We'll get back to you within 24 hours." });
+
+    // Send both emails in background (user doesn't wait)
+    Promise.all([
+      sendEmail({
+        to: process.env.OWNER_EMAIL,
+        subject: `New Enquiry from ${name} — Kota Stone Factory`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #8B4513;">New Contact Enquiry</h2>
+            <table style="width:100%; border-collapse: collapse;">
+              <tr><td style="padding:8px; font-weight:bold; color:#555;">Name</td><td style="padding:8px;">${name}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:8px; font-weight:bold; color:#555;">Email</td><td style="padding:8px;"><a href="mailto:${email}">${email}</a></td></tr>
+              <tr><td style="padding:8px; font-weight:bold; color:#555;">Phone</td><td style="padding:8px;">${phone || 'Not provided'}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:8px; font-weight:bold; color:#555;">Enquiry Type</td><td style="padding:8px;">${enquiry || 'General Enquiry'}</td></tr>
+              <tr><td style="padding:8px; font-weight:bold; color:#555;">Message</td><td style="padding:8px;">${message}</td></tr>
+            </table>
+            <p style="color:#888; font-size:12px; margin-top:20px;">Received at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+          </div>
+        `
+      }),
+      sendEmail({
+        to: email,
+        subject: 'Thank you for contacting Kota Stone Factory',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #8B4513;">Thank You, ${name}!</h2>
+            <p>We've received your enquiry and will get back to you within <strong>24 hours</strong>.</p>
+            <p><strong>Your message:</strong><br/>${message}</p>
+            <hr style="border:none; border-top:1px solid #eee; margin: 20px 0;"/>
+            <p>For urgent queries, call us directly:</p>
+            <p>📞 <strong>+91 86194 59354</strong> &nbsp;|&nbsp; <strong>+91 90797 75779</strong></p>
+            <p>💬 <a href="https://wa.me/918619459354">Chat on WhatsApp</a></p>
+            <p style="color:#888; font-size:12px; margin-top:20px;">Kota Stone Factory, Kota, Rajasthan, India</p>
+          </div>
+        `
+      })
+    ]).catch(err => console.error('Contact email error:', err));
 
   } catch (err) {
     console.error('Contact route error:', err);
